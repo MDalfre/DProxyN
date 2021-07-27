@@ -49,7 +49,8 @@ fun main() = Window(
                 logWriter = logWriter
             )
             rightSide(
-                modifier = Modifier
+                modifier = Modifier,
+                logWriter = logWriter
             )
         }
     }

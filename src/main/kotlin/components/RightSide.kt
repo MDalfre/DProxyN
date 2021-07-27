@@ -13,9 +13,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import services.LogWriter
 
 @Composable
-fun rightSide(modifier: Modifier) {
+fun rightSide(
+    modifier: Modifier,
+    logWriter: LogWriter
+) {
     Column(
         modifier
             .background(MaterialTheme.colors.surface)
@@ -48,7 +52,7 @@ fun rightSide(modifier: Modifier) {
 
         Button(
             modifier = defaultPadding,
-            onClick = { }
+            onClick = { println(logWriter.logList) }
         ) {
             Text("Send Packet")
         }

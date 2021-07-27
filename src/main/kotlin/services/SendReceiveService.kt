@@ -1,7 +1,7 @@
 package services
 
 import commons.ByteToHex
-import model.enum.Indicator
+import model.Indicator
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
@@ -36,9 +36,7 @@ class SendReceiveService(
             val hexString = byteToHex.toHex(readBytes)
             packetNumber++
             when (log) {
-                //true -> fire(PacketTextService("[$indicator] [$packetNumber] -> $hexString"))
-                //true -> fire(TestTextService(packetNumber, indicator.name, hexString.toString()))
-                true -> logWriter.log(indicator.name, hexString.toString())
+                true -> logWriter.log(packetNumber, indicator.name, hexString.toString())
             }
             return hexString.toString()
         }
@@ -66,7 +64,7 @@ class SendReceiveService(
                 byteArray[i] = j.toByte()
             }
             when (log) {
-                true -> logWriter.log(indicator.name, packetToSend)
+                true -> logWriter.log(iPacketNumber, indicator.name, packetToSend)
             }
             val serverOut: OutputStream = connectServer.getOutputStream()
             serverOut.write(byteArray)

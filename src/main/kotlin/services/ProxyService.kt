@@ -1,6 +1,6 @@
 package services
 
-import model.enum.Indicator
+import model.Indicator
 import java.io.IOException
 import java.net.Socket
 
@@ -8,7 +8,6 @@ class ProxyService(
     private val logWriter: LogWriter,
     private val sendReceive: SendReceiveService = SendReceiveService(logWriter)
 ) {
-
     var serverLog = true
     var clientLog = true
     var running = false

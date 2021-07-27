@@ -4,14 +4,16 @@ import model.enum.Indicator
 import java.io.IOException
 import java.net.Socket
 
-class ProxyService {
+class ProxyService(
+    private val logWriter: LogWriter,
+    private val sendReceive: SendReceiveService = SendReceiveService(logWriter)
+) {
 
     var serverLog = true
     var clientLog = true
     var running = false
     private lateinit var localConnection: Socket
     private lateinit var remoteConnection: Socket
-    private val sendReceive = SendReceiveService()
 
     fun setConnections(localPort: Int, remotePort: Int, remoteAddress: String) {
 
@@ -21,7 +23,7 @@ class ProxyService {
         localConnection = SocketConfig().openLocalConnection(localPort)
         remoteConnection = SocketConfig().openRemoteConnection(remoteAddress, remotePort)
 
-        runProxy(localConnection, remoteConnection)
+        runProxy(localConnection = localConnection, remoteConnection = remoteConnection)
 
     }
 
@@ -30,18 +32,37 @@ class ProxyService {
 
         do {
             // --- Server Server ( recebe pacotes servidor )
-            val serverPackets = sendReceive.receive(remoteConnection, Indicator.Server, serverLog)
+            val serverPackets =
+                sendReceive.receive(
+                    connectServer = remoteConnection,
+                    indicator = Indicator.Server,
+                    log = serverLog
+                )
 
             //serverPackets = filter(serverPackets)
 
             // --- Server Client
-            sendReceive.send(localConnection, serverPackets, Indicator.Client, false)
+            sendReceive.send(
+                connectServer = localConnection,
+                packetToSend = serverPackets,
+                indicator = Indicator.Client,
+                log = false
+            )
 
             // --- Client Server
-            val clientPackets = sendReceive.receive(localConnection, Indicator.Client, clientLog)
+            val clientPackets = sendReceive.receive(
+                connectServer = localConnection,
+                indicator = Indicator.Client,
+                log = clientLog
+            )
 
             // --- Server Server ( envia pacotes servidor )
-            sendReceive.send(remoteConnection, clientPackets, Indicator.Server, false)
+            sendReceive.send(
+                connectServer = remoteConnection,
+                packetToSend = clientPackets,
+                indicator = Indicator.Server,
+                log = false
+            )
 
         } while (running)
 
@@ -56,10 +77,22 @@ class ProxyService {
     }
 
     fun sendPacket2Server(packet: String, packetNumber: Long) {
-        sendReceive.send(remoteConnection, packet, Indicator.iServer, serverLog, packetNumber)
+        sendReceive.send(
+            connectServer = remoteConnection,
+            packetToSend = packet,
+            indicator = Indicator.iServer,
+            log = serverLog,
+            iPacketNumber = packetNumber
+        )
     }
 
     fun sendPacket2Client(packet: String, packetNumber: Long) {
-        sendReceive.send(localConnection, packet, Indicator.iClient, clientLog, packetNumber)
+        sendReceive.send(
+            connectServer = localConnection,
+            packetToSend = packet,
+            indicator = Indicator.iClient,
+            log = clientLog,
+            iPacketNumber = packetNumber
+        )
     }
 }

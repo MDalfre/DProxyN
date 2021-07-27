@@ -8,12 +8,18 @@ import java.io.OutputStream
 import java.net.Socket
 
 
-class SendReceiveService {
+class SendReceiveService(
+    private val logWriter: LogWriter
+) {
 
     private var byteToHex = ByteToHex()
     var packetNumber: Long = 0
 
-    fun receive(connectServer: Socket, indicator: Indicator, log: Boolean): String {
+    fun receive(
+        connectServer: Socket,
+        indicator: Indicator,
+        log: Boolean
+    ): String {
 
         while (connectServer.isConnected) {
 
@@ -32,6 +38,7 @@ class SendReceiveService {
             when (log) {
                 //true -> fire(PacketTextService("[$indicator] [$packetNumber] -> $hexString"))
                 //true -> fire(TestTextService(packetNumber, indicator.name, hexString.toString()))
+                true -> logWriter.log(indicator.name, hexString.toString())
             }
             return hexString.toString()
         }
@@ -44,7 +51,8 @@ class SendReceiveService {
         connectServer: Socket,
         packetToSend: String,
         indicator: Indicator,
-        log: Boolean, iPacketNumber: Long = 0
+        log: Boolean,
+        iPacketNumber: Long = 0
     ) {
 
         if (packetToSend != "empty") {
@@ -58,7 +66,7 @@ class SendReceiveService {
                 byteArray[i] = j.toByte()
             }
             when (log) {
-                true -> //TODO("log aqui fire(TestTextService(iPacketNumber, indicator.name, packetToSend)")
+                true -> logWriter.log(indicator.name, packetToSend)
             }
             val serverOut: OutputStream = connectServer.getOutputStream()
             serverOut.write(byteArray)

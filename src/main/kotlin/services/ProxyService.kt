@@ -19,8 +19,8 @@ class ProxyService(
         if (localPort == 0 || remotePort == 0) {
             throw IOException("Ports must not be null")
         }
-        localConnection = SocketConfig().openLocalConnection(localPort)
-        remoteConnection = SocketConfig().openRemoteConnection(remoteAddress, remotePort)
+        localConnection = SocketConfig(logWriter).openLocalConnection(localPort)
+        remoteConnection = SocketConfig(logWriter).openRemoteConnection(remoteAddress, remotePort)
 
         runProxy(localConnection = localConnection, remoteConnection = remoteConnection)
 
@@ -30,7 +30,7 @@ class ProxyService(
 
 
         do {
-            // --- Server Server ( recebe pacotes servidor )
+            // --- Server Server ( receive packets from server )
             val serverPackets =
                 sendReceive.receive(
                     connectServer = remoteConnection,
@@ -55,7 +55,7 @@ class ProxyService(
                 log = clientLog
             )
 
-            // --- Server Server ( envia pacotes servidor )
+            // --- Server Server ( send packets to server )
             sendReceive.send(
                 connectServer = remoteConnection,
                 packetToSend = clientPackets,
@@ -68,30 +68,35 @@ class ProxyService(
         if (!running) {
             localConnection.close()
             remoteConnection.close()
-//            fire(StatusTextService(false))
         }
-
-//        fire(SystemTextService("[System] Disconnected from the server"))
-
+        logWriter.systemLog("Disconnected from the server")
     }
 
     fun sendPacket2Server(packet: String, packetNumber: Long) {
-        sendReceive.send(
-            connectServer = remoteConnection,
-            packetToSend = packet,
-            indicator = Indicator.iServer,
-            log = serverLog,
-            iPacketNumber = packetNumber
-        )
+        try {
+            sendReceive.send(
+                connectServer = remoteConnection,
+                packetToSend = packet,
+                indicator = Indicator.iServer,
+                log = serverLog,
+                iPacketNumber = packetNumber
+            )
+        }catch (ex: Exception) {
+            logWriter.systemLog("Failed to inject: ${ex.message}")
+        }
     }
 
     fun sendPacket2Client(packet: String, packetNumber: Long) {
-        sendReceive.send(
-            connectServer = localConnection,
-            packetToSend = packet,
-            indicator = Indicator.iClient,
-            log = clientLog,
-            iPacketNumber = packetNumber
-        )
+        try {
+            sendReceive.send(
+                connectServer = localConnection,
+                packetToSend = packet,
+                indicator = Indicator.iClient,
+                log = clientLog,
+                iPacketNumber = packetNumber
+            )
+        }catch (ex: Exception) {
+            logWriter.systemLog("Failed to inject: ${ex.message}")
+        }
     }
 }

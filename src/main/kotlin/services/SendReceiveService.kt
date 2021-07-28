@@ -41,7 +41,7 @@ class SendReceiveService(
             return hexString.toString()
         }
 
-        return "empty"
+        return ""
 
     }
 
@@ -53,9 +53,9 @@ class SendReceiveService(
         iPacketNumber: Long = 0
     ) {
 
-        if (packetToSend != "empty") {
+        if (packetToSend != "") {
             //Regex para remover espaços; Remover espaços depois no StringBuilder do serverReceive
-            var stringPacket = packetToSend.replace("\\s".toRegex(), "")
+            val stringPacket = packetToSend.replace("\\s".toRegex(), "")
 
             val byteArray = ByteArray(stringPacket.length / 2)
             for (i in byteArray.indices) {

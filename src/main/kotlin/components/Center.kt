@@ -1,41 +1,38 @@
 package components
 
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.Button
-import androidx.compose.material.ListItem
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.launch
 import model.Log
 import services.LogWriter
+import javax.management.relation.Role
+import kotlin.concurrent.thread
+import kotlin.time.Duration
 
 @Composable
 fun center(
     modifier: Modifier,
     logWriter: LogWriter
 ) {
-    var eventLogList = remember { mutableStateListOf("")}
+    var eventLogList by mutableStateOf(listOf<Log>())
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
 
     Column(
         modifier
@@ -67,21 +64,74 @@ fun center(
         )
         LazyColumn(
             modifier
-                .height(550.dp)
+                .height(540.dp)
                 .width(600.dp)
-                .border(color = Color.Gray, width = 1.dp)
-
+                .border(color = Color.Gray, width = 1.dp, shape = RoundedCornerShape(8.dp)),
+            state = listState,
+            reverseLayout = false
         ) {
-            eventLogList.forEach {
-                item { Text(it) }
+            items(eventLogList) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(5.dp)
+                        .clickable { },
+                    elevation = 10.dp
+                ) {
+                    Text(it.index.toString())
+                    Column(
+                        modifier = Modifier.padding(start = 25.dp)
+                    ) {
+                        Text(it.type, fontWeight = FontWeight.Bold)
+                        CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
+                            Text(it.message, style = MaterialTheme.typography.body2)
+                        }
+                    }
+                }
             }
         }
 
-        Button(
-            onClick = {eventLogList.add(logWriter.logList.last().message)  }
+        Row(
+            modifier
+                .padding(start = 16.dp, end = 16.dp)
+                .fillMaxSize(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Atualizar")
+            Button(
+                onClick = {
+                    if (!listState.isScrollInProgress && eventLogList.isNotEmpty()) {
+                        coroutineScope.launch {
+                            listState.animateScrollToItem(index = eventLogList.size)
+                        }
+                    }
+                }
+            ) {
+                Text("Go to first")
+            }
+
+            Button(
+                onClick = {
+                    if (!listState.isScrollInProgress && eventLogList.isNotEmpty()) {
+                        coroutineScope.launch {
+                            listState.animateScrollToItem(index = 0)
+                        }
+                    }
+                }
+            ) {
+                Text("Go to Last")
+            }
         }
 
+
+        thread {
+            do {
+                if (logWriter.logList.isEmpty()) {
+                    Thread.sleep(500)
+                } else if (eventLogList.size != logWriter.logList.size) {
+                    eventLogList = logWriter.logList.map { it }.reversed()
+                }
+            } while (true)
+        }
     }
 }

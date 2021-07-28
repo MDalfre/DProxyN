@@ -33,9 +33,9 @@ fun leftSide(
             .fillMaxHeight()
     ) {
 
-        var remoteAddress by remember { mutableStateOf("") }
-        var remotePort by remember { mutableStateOf("") }
-        var localPort by remember { mutableStateOf("") }
+        var remoteAddress by remember { mutableStateOf("127.0.0.1") }
+        var remotePort by remember { mutableStateOf("2020") }
+        var localPort by remember { mutableStateOf("2021") }
         var statedState by remember { mutableStateOf(false) }
 
         OutlinedTextField(

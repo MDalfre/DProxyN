@@ -33,7 +33,7 @@ fun top() {
                     .background(Color.DarkGray, shape = RoundedCornerShape(8.dp)),
                 style = TextStyle(
                     fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
+                    fontSize = 28.sp,
                     letterSpacing = 2.5.sp
                 )
             )

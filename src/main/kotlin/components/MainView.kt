@@ -1,7 +1,7 @@
 package components
 
 import OVER_LINE_STYLE
-import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,8 +17,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import commons.DarkBlue
+import commons.DarkGreen
 import kotlinx.coroutines.launch
 import model.Indicator
 import model.Log
@@ -36,6 +40,7 @@ fun leftSide(
     logWriterService: LogWriterService
 ) {
     val defaultButtonColor = buttonColors(backgroundColor = Color.DarkGray, contentColor = Color.White)
+    val injectedTextColor = MaterialTheme.colors.primary.copy(alpha = ContentAlpha.high)
 
     var remoteAddress by remember { mutableStateOf("127.0.0.1") }
     var remotePort by remember { mutableStateOf("2020") }
@@ -72,7 +77,7 @@ fun leftSide(
                 style = OVER_LINE_STYLE
             )
             Divider(
-                color = Color.Gray,
+                color = Color.Black,
                 modifier = Modifier
                     .padding(end = 2.dp)
 
@@ -173,7 +178,7 @@ fun leftSide(
                 style = OVER_LINE_STYLE
             )
             Divider(
-                color = Color.Gray,
+                color = Color.Black,
                 modifier = Modifier
                     .padding(end = 2.dp)
 
@@ -188,8 +193,8 @@ fun leftSide(
             modifier
                 .height(110.dp)
                 .width(600.dp)
-                .background(Color.LightGray, shape = RoundedCornerShape(8.dp))
-                .padding(5.dp)
+                .border(width = 0.5.dp, color = Color.DarkGray, shape = RoundedCornerShape(8.dp))
+                .padding(start = 16.dp, end= 5.dp,top = 5.dp, bottom = 5.dp)
         ) {
             items(messageLogList) { message ->
                 Text(message, style = MaterialTheme.typography.body2)
@@ -211,7 +216,7 @@ fun leftSide(
                 style = OVER_LINE_STYLE
             )
             Divider(
-                color = Color.Gray,
+                color = Color.Black,
                 modifier = Modifier
                     .padding(end = 2.dp)
 
@@ -225,8 +230,8 @@ fun leftSide(
         LazyColumn(
             modifier
                 .height(540.dp)
-                .width(600.dp)
-                .background(Color.LightGray, shape = RoundedCornerShape(8.dp)),
+                .width(600.dp),
+                //.background(Color.LightGray, shape = RoundedCornerShape(8.dp)),
             state = listState,
             reverseLayout = false
         ) {
@@ -234,7 +239,7 @@ fun leftSide(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(5.dp)
+                        .padding(start = 26.dp, end = 5.dp, top = 5.dp, bottom = 5.dp)
                         .clickable {
                             if (packetLog.type == Indicator.Server.name) {
                                 packetToClient = packetLog.message
@@ -244,11 +249,16 @@ fun leftSide(
                         },
                     elevation = 10.dp
                 ) {
-                    Text(packetLog.index.toString())
+                    Text(packetLog.index.toString(), style = TextStyle(fontSize = 13.sp))
                     Column(
                         modifier = Modifier.padding(start = 25.dp)
                     ) {
-                        Text(packetLog.type, fontWeight = FontWeight.Bold)
+                        val textColor = when(packetLog.type){
+                            Indicator.Server.name -> DarkBlue
+                            Indicator.Client.name -> DarkGreen
+                            else -> injectedTextColor
+                        }
+                        Text(packetLog.type, color = textColor, fontWeight = FontWeight.Bold )
                         CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
                             Text(packetLog.message, style = MaterialTheme.typography.body2)
                         }
@@ -256,6 +266,11 @@ fun leftSide(
                 }
             }
         }
+        Divider(
+            color = Color.Black,
+            modifier = Modifier
+                .padding(end = 2.dp)
+        )
 
         Row(
             modifier
@@ -269,7 +284,7 @@ fun leftSide(
                 onClick = {
                     if (!listState.isScrollInProgress && packetLogList.isNotEmpty()) {
                         coroutineScope.launch {
-                            listState.animateScrollToItem(index = packetLogList.size)
+                            listState.animateScrollToItem(index = 0)
                         }
                     }
                 }
@@ -297,7 +312,7 @@ fun leftSide(
                 onClick = {
                     if (!listState.isScrollInProgress && packetLogList.isNotEmpty()) {
                         coroutineScope.launch {
-                            listState.animateScrollToItem(index = 0)
+                            listState.animateScrollToItem(index = packetLogList.size)
                         }
                     }
                 }
@@ -332,7 +347,7 @@ fun leftSide(
                 style = OVER_LINE_STYLE
             )
             Divider(
-                color = Color.Gray,
+                color = Color.Black,
                 modifier = Modifier
                     .padding(end = 2.dp)
 
@@ -358,7 +373,7 @@ fun leftSide(
             colors = defaultButtonColor,
             onClick = {
                 coroutineScope.launch {
-                    proxyService.sendPacket2Server(packetToServer, 0L)
+                    proxyService.sendPacket2Server(packetToServer)
                 }
             }
         ) {
@@ -380,7 +395,7 @@ fun leftSide(
                 style = OVER_LINE_STYLE
             )
             Divider(
-                color = Color.Gray,
+                color = Color.Black,
                 modifier = Modifier
                     .padding(end = 2.dp)
 
@@ -407,7 +422,7 @@ fun leftSide(
             colors = defaultButtonColor,
             onClick = {
                 coroutineScope.launch {
-                    proxyService.sendPacket2Client(packetToClient, 0L)
+                    proxyService.sendPacket2Client(packetToClient)
                 }
             }
         ) {

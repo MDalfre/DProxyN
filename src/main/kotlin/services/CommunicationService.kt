@@ -8,8 +8,8 @@ import java.io.OutputStream
 import java.net.Socket
 
 
-class SendReceiveService(
-    private val logWriter: LogWriter
+class CommunicationService(
+    private val logWriterService: LogWriterService
 ) {
 
     private var byteToHex = ByteToHex()
@@ -36,7 +36,7 @@ class SendReceiveService(
             val hexString = byteToHex.toHex(readBytes)
             packetNumber++
             when (log) {
-                true -> logWriter.log(packetNumber, indicator.name, hexString.toString())
+                true -> logWriterService.log(packetNumber, indicator.name, hexString.toString())
             }
             return hexString.toString()
         }
@@ -64,7 +64,7 @@ class SendReceiveService(
                 byteArray[i] = j.toByte()
             }
             when (log) {
-                true -> logWriter.log(iPacketNumber, indicator.name, packetToSend)
+                true -> logWriterService.log(iPacketNumber, indicator.name, packetToSend)
             }
             val serverOut: OutputStream = connectServer.getOutputStream()
             serverOut.write(byteArray)

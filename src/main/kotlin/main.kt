@@ -1,38 +1,44 @@
 import androidx.compose.desktop.Window
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.MaterialTheme
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntSize
-import components.center
+import androidx.compose.ui.unit.sp
 import components.leftSide
-import components.rightSide
+import components.top
+import services.LogWriterService
+import services.ProxyService
 
-const val DEFAULT_WIDTH = 900
-const val DEFAULT_HEIGHT = 500
+const val DEFAULT_WIDTH = 1300
+const val DEFAULT_HEIGHT = 930
+val OVER_LINE_STYLE = TextStyle(
+    fontWeight = FontWeight.Normal,
+    fontSize = 13.sp,
+    letterSpacing = 1.5.sp
+)
+val logWriterService = LogWriterService()
 
 fun main() = Window(
-    title = "DProxyN",
+    title = "DProxyN - Sniffer Tunneling",
     size = IntSize(DEFAULT_WIDTH, DEFAULT_HEIGHT),
+    resizable = false
 ) {
-    var text by remember { mutableStateOf("Hello, World!") }
+    val proxyService = ProxyService(logWriterService)
 
     MaterialTheme {
-        val mainOutput = remember { mutableStateOf(TextFieldValue("0")) }
+
         Row {
             leftSide(
-                modifier = Modifier
+                modifier = Modifier,
+                proxyService = proxyService,
+                logWriterService = logWriterService
             )
-            center(
-                modifier = Modifier
-            )
-            rightSide(
-                modifier = Modifier
-            )
+        }
+        Column {
+            top()
         }
     }
 }

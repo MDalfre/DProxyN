@@ -1,27 +1,29 @@
 package services
 
-import model.enum.Indicator
+import model.Indicator
 import java.io.IOException
 import java.net.Socket
 
-class ProxyService {
-
+class ProxyService(
+    private val logWriterService: LogWriterService,
+    private val communicationService: CommunicationService = CommunicationService(logWriterService)
+) {
     var serverLog = true
     var clientLog = true
     var running = false
     private lateinit var localConnection: Socket
     private lateinit var remoteConnection: Socket
-    private val sendReceive = SendReceiveService()
 
     fun setConnections(localPort: Int, remotePort: Int, remoteAddress: String) {
 
         if (localPort == 0 || remotePort == 0) {
+            logWriterService.systemLog("Fail to start: Ports must not be null")
             throw IOException("Ports must not be null")
         }
-        localConnection = SocketConfig().openLocalConnection(localPort)
-        remoteConnection = SocketConfig().openRemoteConnection(remoteAddress, remotePort)
+        localConnection = SessionSetupService(logWriterService).openLocalConnection(localPort)
+        remoteConnection = SessionSetupService(logWriterService).openRemoteConnection(remoteAddress, remotePort)
 
-        runProxy(localConnection, remoteConnection)
+        runProxy(localConnection = localConnection, remoteConnection = remoteConnection)
 
     }
 
@@ -29,37 +31,73 @@ class ProxyService {
 
 
         do {
-            // --- Server Server ( recebe pacotes servidor )
-            val serverPackets = sendReceive.receive(remoteConnection, Indicator.Server, serverLog)
+            // --- Server Server ( receive packets from server )
+            val serverPackets =
+                communicationService.receive(
+                    connectServer = remoteConnection,
+                    indicator = Indicator.Server,
+                    log = serverLog
+                )
 
             //serverPackets = filter(serverPackets)
 
             // --- Server Client
-            sendReceive.send(localConnection, serverPackets, Indicator.Client, false)
+            communicationService.send(
+                connectServer = localConnection,
+                packetToSend = serverPackets,
+                indicator = Indicator.Client,
+                log = false
+            )
 
             // --- Client Server
-            val clientPackets = sendReceive.receive(localConnection, Indicator.Client, clientLog)
+            val clientPackets = communicationService.receive(
+                connectServer = localConnection,
+                indicator = Indicator.Client,
+                log = clientLog
+            )
 
-            // --- Server Server ( envia pacotes servidor )
-            sendReceive.send(remoteConnection, clientPackets, Indicator.Server, false)
+            // --- Server Server ( send packets to server )
+            communicationService.send(
+                connectServer = remoteConnection,
+                packetToSend = clientPackets,
+                indicator = Indicator.Server,
+                log = false
+            )
 
         } while (running)
 
         if (!running) {
             localConnection.close()
             remoteConnection.close()
-//            fire(StatusTextService(false))
         }
-
-//        fire(SystemTextService("[System] Disconnected from the server"))
-
+        logWriterService.systemLog("Disconnected from the server")
     }
 
     fun sendPacket2Server(packet: String, packetNumber: Long) {
-        sendReceive.send(remoteConnection, packet, Indicator.iServer, serverLog, packetNumber)
+        try {
+            communicationService.send(
+                connectServer = remoteConnection,
+                packetToSend = packet,
+                indicator = Indicator.iServer,
+                log = serverLog,
+                iPacketNumber = packetNumber
+            )
+        } catch (ex: Exception) {
+            logWriterService.systemLog("Failed to inject: ${ex.message}")
+        }
     }
 
     fun sendPacket2Client(packet: String, packetNumber: Long) {
-        sendReceive.send(localConnection, packet, Indicator.iClient, clientLog, packetNumber)
+        try {
+            communicationService.send(
+                connectServer = localConnection,
+                packetToSend = packet,
+                indicator = Indicator.iClient,
+                log = clientLog,
+                iPacketNumber = packetNumber
+            )
+        } catch (ex: Exception) {
+            logWriterService.systemLog("Failed to inject: ${ex.message}")
+        }
     }
 }

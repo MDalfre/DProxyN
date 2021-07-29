@@ -1,19 +1,25 @@
 package services
 
 import commons.ByteToHex
-import model.enum.Indicator
+import model.Indicator
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.Socket
 
 
-class SendReceiveService {
+class CommunicationService(
+    private val logWriterService: LogWriterService
+) {
 
     private var byteToHex = ByteToHex()
     var packetNumber: Long = 0
 
-    fun receive(connectServer: Socket, indicator: Indicator, log: Boolean): String {
+    fun receive(
+        connectServer: Socket,
+        indicator: Indicator,
+        log: Boolean
+    ): String {
 
         while (connectServer.isConnected) {
 
@@ -30,13 +36,12 @@ class SendReceiveService {
             val hexString = byteToHex.toHex(readBytes)
             packetNumber++
             when (log) {
-                //true -> fire(PacketTextService("[$indicator] [$packetNumber] -> $hexString"))
-                //true -> fire(TestTextService(packetNumber, indicator.name, hexString.toString()))
+                true -> logWriterService.log(packetNumber, indicator.name, hexString.toString())
             }
             return hexString.toString()
         }
 
-        return "empty"
+        return ""
 
     }
 
@@ -44,12 +49,13 @@ class SendReceiveService {
         connectServer: Socket,
         packetToSend: String,
         indicator: Indicator,
-        log: Boolean, iPacketNumber: Long = 0
+        log: Boolean,
+        iPacketNumber: Long = 0
     ) {
 
-        if (packetToSend != "empty") {
+        if (packetToSend != "") {
             //Regex para remover espaços; Remover espaços depois no StringBuilder do serverReceive
-            var stringPacket = packetToSend.replace("\\s".toRegex(), "")
+            val stringPacket = packetToSend.replace("\\s".toRegex(), "")
 
             val byteArray = ByteArray(stringPacket.length / 2)
             for (i in byteArray.indices) {
@@ -58,7 +64,7 @@ class SendReceiveService {
                 byteArray[i] = j.toByte()
             }
             when (log) {
-                true -> //TODO("log aqui fire(TestTextService(iPacketNumber, indicator.name, packetToSend)")
+                true -> logWriterService.log(iPacketNumber, indicator.name, packetToSend)
             }
             val serverOut: OutputStream = connectServer.getOutputStream()
             serverOut.write(byteArray)

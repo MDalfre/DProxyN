@@ -82,7 +82,7 @@ class ProxyService(
                 log = serverLog,
                 iPacketNumber = packetNumber
             )
-        }catch (ex: Exception) {
+        } catch (ex: Exception) {
             logWriterService.systemLog("Failed to inject: ${ex.message}")
         }
     }
@@ -96,7 +96,7 @@ class ProxyService(
                 log = clientLog,
                 iPacketNumber = packetNumber
             )
-        }catch (ex: Exception) {
+        } catch (ex: Exception) {
             logWriterService.systemLog("Failed to inject: ${ex.message}")
         }
     }

@@ -25,7 +25,7 @@ class LogWriterService {
         val fileName = "Log-${LocalDate.now()}-${LocalDateTime.now().nano}"
         File(fileName).printWriter().use { out ->
             out.println("Index \t Sent By \t Packet")
-            logList.map { out.println("[${it.index}] \t [${it.type}] \t ${it.message}")  }
+            logList.map { out.println("[${it.index}] \t [${it.type}] \t ${it.message}") }
         }
     }
 }

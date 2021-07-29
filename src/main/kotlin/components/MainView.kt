@@ -35,7 +35,7 @@ fun leftSide(
     proxyService: ProxyService,
     logWriterService: LogWriterService
 ) {
-    val defaultButtonColor = buttonColors(backgroundColor= Color.DarkGray, contentColor= Color.White)
+    val defaultButtonColor = buttonColors(backgroundColor = Color.DarkGray, contentColor = Color.White)
 
     var remoteAddress by remember { mutableStateOf("127.0.0.1") }
     var remotePort by remember { mutableStateOf("2020") }

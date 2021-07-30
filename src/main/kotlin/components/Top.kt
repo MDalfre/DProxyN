@@ -20,7 +20,7 @@ fun top() {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(start = 26.dp, top = 5.dp, bottom = 5.dp),
+                .padding(top = 5.dp, bottom = 5.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {

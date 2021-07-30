@@ -36,10 +36,7 @@ fun main() = Window(
 
         Row(
             modifier = Modifier.background(brush = Brush.verticalGradient(
-                colors = listOf(
-                    Color(0xFFAEC9EE),
-                    Color(0xFFB3B7BB)
-                )
+                colors = Background
             ))
         ) {
             leftSide(

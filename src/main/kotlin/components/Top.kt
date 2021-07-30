@@ -25,7 +25,8 @@ fun top() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
-                bitmap = imageFromResource("logo-long.png"), "Logo"
+                bitmap = imageFromResource("logo-long.png"),
+                contentDescription = "Logo"
             )
         }
     }

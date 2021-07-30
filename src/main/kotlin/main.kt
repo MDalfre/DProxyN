@@ -4,8 +4,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntSize
@@ -26,7 +24,7 @@ val OVER_LINE_STYLE = TextStyle(
 val logWriterService = LogWriterService()
 
 fun main() = Window(
-    title = "DProxyN - V0.1a",
+    title = "DproxyN",
     size = IntSize(DEFAULT_WIDTH, DEFAULT_HEIGHT),
     resizable = false
 ) {

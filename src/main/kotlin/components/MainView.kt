@@ -152,7 +152,6 @@ fun leftSide(
             ) {
                 Text("Stop Proxy")
             }
-
         }
 
     }
@@ -194,7 +193,7 @@ fun leftSide(
                 .height(110.dp)
                 .width(600.dp)
                 .border(width = 0.5.dp, color = Color.DarkGray, shape = RoundedCornerShape(8.dp))
-                .padding(start = 16.dp, end= 5.dp,top = 5.dp, bottom = 5.dp)
+                .padding(start = 16.dp, end = 5.dp, top = 5.dp, bottom = 5.dp)
         ) {
             items(messageLogList) { message ->
                 Text(message, style = MaterialTheme.typography.body2)
@@ -231,7 +230,6 @@ fun leftSide(
             modifier
                 .height(540.dp)
                 .width(600.dp),
-                //.background(Color.LightGray, shape = RoundedCornerShape(8.dp)),
             state = listState,
             reverseLayout = false
         ) {
@@ -253,12 +251,12 @@ fun leftSide(
                     Column(
                         modifier = Modifier.padding(start = 25.dp)
                     ) {
-                        val textColor = when(packetLog.type){
+                        val textColor = when (packetLog.type) {
                             Indicator.Server.name -> DarkBlue
                             Indicator.Client.name -> DarkGreen
                             else -> injectedTextColor
                         }
-                        Text(packetLog.type, color = textColor, fontWeight = FontWeight.Bold )
+                        Text(packetLog.type, color = textColor, fontWeight = FontWeight.Bold)
                         CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
                             Text(packetLog.message, style = MaterialTheme.typography.body2)
                         }

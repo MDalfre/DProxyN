@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntSize
@@ -33,7 +35,12 @@ fun main() = Window(
     MaterialTheme {
 
         Row(
-            modifier = Modifier.background(color = Background)
+            modifier = Modifier.background(brush = Brush.verticalGradient(
+                colors = listOf(
+                    Color(0xFFAEC9EE),
+                    Color(0xFFB3B7BB)
+                )
+            ))
         ) {
             leftSide(
                 modifier = Modifier,

@@ -73,28 +73,28 @@ class ProxyService(
         logWriterService.systemLog("Disconnected from the server")
     }
 
-    fun sendPacket2Server(packet: String, packetNumber: Long) {
+    fun sendPacket2Server(packet: String) {
         try {
             communicationService.send(
                 connectServer = remoteConnection,
                 packetToSend = packet,
                 indicator = Indicator.iServer,
                 log = serverLog,
-                iPacketNumber = packetNumber
+                iPacketNumber = ++communicationService.packetNumber
             )
         } catch (ex: Exception) {
             logWriterService.systemLog("Failed to inject: ${ex.message}")
         }
     }
 
-    fun sendPacket2Client(packet: String, packetNumber: Long) {
+    fun sendPacket2Client(packet: String) {
         try {
             communicationService.send(
                 connectServer = localConnection,
                 packetToSend = packet,
                 indicator = Indicator.iClient,
                 log = clientLog,
-                iPacketNumber = packetNumber
+                iPacketNumber = ++communicationService.packetNumber
             )
         } catch (ex: Exception) {
             logWriterService.systemLog("Failed to inject: ${ex.message}")

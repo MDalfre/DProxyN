@@ -7,3 +7,7 @@ This is a simple packet editor created to manipulate traffic between client and 
 # Diagram 
 
 ![alt text](https://raw.githubusercontent.com/MDalfre/DProxyN/master/.github/images/dproxyn-diagram.png)
+
+# ScreenShot
+
+![alt text](https://raw.githubusercontent.com/MDalfre/DProxyN/master/.github/images/dproxyn-screen.png)

@@ -32,7 +32,6 @@ import kotlin.concurrent.thread
 
 val defaultPadding = Modifier.padding(8.dp)
 
-
 @Composable
 fun leftSide(
     modifier: Modifier,
@@ -40,7 +39,12 @@ fun leftSide(
     logWriterService: LogWriterService
 ) {
     val defaultButtonColor = buttonColors(backgroundColor = Color.DarkGray, contentColor = Color.White)
+    val defaultButtonAbortColor = buttonColors(backgroundColor = MaterialTheme.colors.error)
     val injectedTextColor = MaterialTheme.colors.primary.copy(alpha = ContentAlpha.high)
+    val checkboxDefaultColor = CheckboxDefaults.colors(checkedColor = MaterialTheme.colors.primary)
+
+    val defaultLoopValueRange = 1f..300f
+    val defaultIntervalValueRange = 10f..3000f
 
     var remoteAddress by remember { mutableStateOf("127.0.0.1") }
     var remotePort by remember { mutableStateOf("2020") }
@@ -51,11 +55,19 @@ fun leftSide(
     var messageLogList by mutableStateOf(listOf<String>())
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
+    var clientLogEnabled by remember { mutableStateOf(true) }
+    var serverLogEnabled by remember { mutableStateOf(true) }
 
     var packetToServer by remember { mutableStateOf(" ") }
     var packetToClient by remember { mutableStateOf(" ") }
+    var sendToServerSliderPacketAmount by remember { mutableStateOf(1f) }
+    var sendToServerSliderPacketDelay by remember { mutableStateOf(150f) }
+    var sendToClientSliderPacketAmount by remember { mutableStateOf(1f) }
+    var sendToClientSliderPacketDelay by remember { mutableStateOf(150f) }
+    var statedInjectionServerState by remember { mutableStateOf(false) }
+    var statedInjectionClientState by remember { mutableStateOf(false) }
 
-    //Proxy Setup
+    /** Proxy Setup **/
     Column(
         modifier
             .padding(start = 16.dp, end = 16.dp, top = 36.dp)
@@ -153,10 +165,9 @@ fun leftSide(
                 Text("Stop Proxy")
             }
         }
-
     }
 
-    //Center
+    /** Center **/
     Column(
         modifier
             .padding(start = 16.dp, end = 16.dp, top = 36.dp)
@@ -202,7 +213,7 @@ fun leftSide(
 
         Spacer(
             modifier = Modifier
-                .padding(16.dp)
+                .padding(10.dp)
         )
 
         Row(
@@ -221,10 +232,45 @@ fun leftSide(
 
             )
         }
-        Spacer(
-            modifier = Modifier
-                .padding(10.dp)
-        )
+        Row(
+            modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Row {
+                Text(
+                    "Log server packets:",
+                    style = OVER_LINE_STYLE,
+                    modifier = modifier.padding(top = 2.dp, end = 2.dp)
+                )
+                Checkbox(
+                    colors = checkboxDefaultColor,
+                    checked = serverLogEnabled,
+                    onCheckedChange = {
+                        serverLogEnabled = it
+                        proxyService.serverLog = it
+                    }
+                )
+            }
+            Row {
+                Text(
+                    "Log client packets:",
+                    style = OVER_LINE_STYLE,
+                    modifier = modifier.padding(top = 2.dp, end = 2.dp)
+                )
+                Checkbox(
+                    colors = checkboxDefaultColor,
+                    checked = clientLogEnabled,
+                    onCheckedChange = {
+                        clientLogEnabled = it
+                        proxyService.clientLog = it
+                    }
+                )
+            }
+            Spacer(
+                modifier = Modifier
+                    .padding(6.dp)
+            )
+        }
 
         LazyColumn(
             modifier
@@ -323,7 +369,7 @@ fun leftSide(
         }
     }
 
-    //Packet Injector
+    /** Packet Injector **/
     Column(
         modifier
             .padding(start = 16.dp, end = 16.dp, top = 36.dp)
@@ -365,18 +411,62 @@ fun leftSide(
             onValueChange = { value -> packetToServer = value },
             label = { Text("Send to Server") }
         )
-        Button(
-            modifier = defaultPadding,
-            enabled = statedState,
-            colors = defaultButtonColor,
-            onClick = {
-                coroutineScope.launch {
-                    proxyService.sendPacket2Server(packetToServer)
-                }
-            }
+        Row(
+            modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            Text("To server")
+            Button(
+                modifier = defaultPadding,
+                enabled = (statedState && packetToServer != " " && !statedInjectionServerState),
+                colors = defaultButtonColor,
+                onClick = {
+                    coroutineScope.launch {
+                        proxyService.runningServerInjection = true
+                        proxyService.sendPacket2Server(
+                            packet = packetToServer,
+                            loop = sendToServerSliderPacketAmount.toInt(),
+                            interval = sendToServerSliderPacketDelay.toLong()
+                        )
+                    }
+                }
+            ) {
+                Text("To server")
+            }
+            Button(
+                modifier = defaultPadding,
+                enabled = statedInjectionServerState,
+                colors = defaultButtonAbortColor,
+                onClick = { proxyService.runningServerInjection = false }
+            ) {
+                Text("Abort")
+            }
         }
+
+        Text(
+            "Loop: ${sendToServerSliderPacketAmount.toInt()} times",
+            style = OVER_LINE_STYLE,
+            modifier = modifier.padding(start = 16.dp, 2.dp)
+        )
+        Slider(
+            enabled = (packetToServer != " "),
+            modifier = defaultPadding.height(10.dp),
+            value = sendToServerSliderPacketAmount,
+            onValueChange = { sendToServerSliderPacketAmount = it },
+            valueRange = defaultLoopValueRange
+        )
+        Text(
+            "Interval: ${sendToServerSliderPacketDelay.toLong()}ms",
+            style = OVER_LINE_STYLE,
+            modifier = modifier.padding(start = 16.dp, 2.dp)
+        )
+        Slider(
+            enabled = (packetToServer != " "),
+            modifier = defaultPadding.height(10.dp),
+            value = sendToServerSliderPacketDelay,
+            onValueChange = { sendToServerSliderPacketDelay = it },
+            valueRange = defaultIntervalValueRange
+        )
 
         Spacer(
             modifier = Modifier
@@ -402,7 +492,6 @@ fun leftSide(
                 modifier = Modifier
                     .padding(10.dp)
             )
-
         }
 
         OutlinedTextField(
@@ -414,39 +503,64 @@ fun leftSide(
             label = { Text("Send to Client") }
         )
 
-        Button(
-            modifier = defaultPadding,
-            enabled = statedState,
-            colors = defaultButtonColor,
-            onClick = {
-                coroutineScope.launch {
-                    proxyService.sendPacket2Client(packetToClient)
-                }
-            }
+        Row(
+            modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            Text("To client")
-        }
-
-        Row(
-            modifier
-                .padding(start = 16.dp, end = 16.dp)
-                .fillMaxSize(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-
+            Button(
+                modifier = defaultPadding,
+                enabled = (statedState && packetToClient != " " && !statedInjectionClientState),
+                colors = defaultButtonColor,
+                onClick = {
+                    coroutineScope.launch {
+                        proxyService.sendPacket2Client(
+                            packet = packetToClient,
+                            loop = sendToClientSliderPacketAmount.toInt(),
+                            interval = sendToClientSliderPacketDelay.toLong()
+                        )
+                    }
+                }
             ) {
+                Text("To client")
+            }
 
-        }
-
-        Row(
-            modifier
-                .padding(start = 16.dp, end = 16.dp)
-                .fillMaxSize(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-
+            Button(
+                modifier = defaultPadding,
+                enabled = statedInjectionClientState,
+                colors = defaultButtonAbortColor,
+                onClick = { proxyService.runningClientInjection = false }
             ) {
+                Text("Abort")
+            }
         }
-
+        Text(
+            "Loop: ${sendToClientSliderPacketAmount.toInt()} times",
+            style = OVER_LINE_STYLE,
+            modifier = modifier.padding(start = 16.dp, 2.dp)
+        )
+        Slider(
+            enabled = (packetToClient != " "),
+            modifier = defaultPadding.height(10.dp),
+            value = sendToClientSliderPacketAmount,
+            onValueChange = { sendToClientSliderPacketAmount = it },
+            valueRange = defaultLoopValueRange
+        )
+        Text(
+            "Interval: ${sendToClientSliderPacketDelay.toLong()}ms",
+            style = OVER_LINE_STYLE,
+            modifier = modifier.padding(start = 16.dp, 2.dp)
+        )
+        Slider(
+            enabled = (packetToClient != " "),
+            modifier = defaultPadding.height(10.dp),
+            value = sendToClientSliderPacketDelay,
+            onValueChange = { sendToClientSliderPacketDelay = it },
+            valueRange = defaultIntervalValueRange
+        )
     }
+
+    /** Updaters **/
 
     if (packetLogList.size != logWriterService.logList.size) {
         packetLogList = logWriterService.logList.map { it }.reversed()
@@ -454,5 +568,13 @@ fun leftSide(
 
     if (messageLogList.size != logWriterService.systemLogList.size) {
         messageLogList = logWriterService.systemLogList.map { it }.takeLast(6)
+    }
+
+    if (proxyService.runningServerInjection != statedInjectionServerState) {
+        statedInjectionServerState = proxyService.runningServerInjection
+    }
+
+    if (proxyService.runningClientInjection != statedInjectionClientState) {
+        statedInjectionClientState = proxyService.runningClientInjection
     }
 }

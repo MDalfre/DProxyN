@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "ma.dalfre"
-version = "1.0"
+version = "1.0.1"
 
 repositories {
     jcenter()
@@ -30,7 +30,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Exe)
             packageName = "DProxyN"
-            packageVersion = "1.0.0"
+            packageVersion = "1.0.1"
             description = "Simple packet sniffer"
             windows {
                 console = false

@@ -11,6 +11,8 @@ class ProxyService(
     var serverLog = true
     var clientLog = true
     var running = false
+    var runningClientInjection = false
+    var runningServerInjection = false
     private lateinit var localConnection: Socket
     private lateinit var remoteConnection: Socket
 
@@ -73,31 +75,57 @@ class ProxyService(
         logWriterService.systemLog("Disconnected from the server")
     }
 
-    fun sendPacket2Server(packet: String) {
-        try {
-            communicationService.send(
-                connectServer = remoteConnection,
-                packetToSend = packet,
-                indicator = Indicator.iServer,
-                log = serverLog,
-                iPacketNumber = ++communicationService.packetNumber
-            )
-        } catch (ex: Exception) {
-            logWriterService.systemLog("Failed to inject: ${ex.message}")
-        }
+    fun sendPacket2Server(packet: String, loop: Int, interval: Long) {
+        Thread {
+            var loopCounter = loop
+            runningServerInjection = true
+
+            do {
+                --loopCounter
+                try {
+                    communicationService.send(
+                        connectServer = remoteConnection,
+                        packetToSend = packet,
+                        indicator = Indicator.iServer,
+                        log = serverLog,
+                        iPacketNumber = ++communicationService.packetNumber
+                    )
+                    Thread.sleep(interval)
+                } catch (ex: Exception) {
+                    logWriterService.systemLog("Failed to inject: ${ex.message}")
+                    break
+                }
+            } while (loopCounter > 0 && runningServerInjection)
+
+            runningServerInjection = false
+
+        }.start()
     }
 
-    fun sendPacket2Client(packet: String) {
-        try {
-            communicationService.send(
-                connectServer = localConnection,
-                packetToSend = packet,
-                indicator = Indicator.iClient,
-                log = clientLog,
-                iPacketNumber = ++communicationService.packetNumber
-            )
-        } catch (ex: Exception) {
-            logWriterService.systemLog("Failed to inject: ${ex.message}")
-        }
+    fun sendPacket2Client(packet: String, loop: Int, interval: Long) {
+        Thread {
+            var loopCounter = loop
+            runningClientInjection = true
+
+            do {
+                --loopCounter
+                try {
+                    communicationService.send(
+                        connectServer = localConnection,
+                        packetToSend = packet,
+                        indicator = Indicator.iClient,
+                        log = clientLog,
+                        iPacketNumber = ++communicationService.packetNumber
+                    )
+                    Thread.sleep(interval)
+                } catch (ex: Exception) {
+                    logWriterService.systemLog("Failed to inject: ${ex.message}")
+                    break
+                }
+            } while (loopCounter > 0 && runningClientInjection)
+
+            runningClientInjection = false
+
+        }.start()
     }
 }

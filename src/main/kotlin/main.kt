@@ -5,13 +5,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.sp
 import commons.Background
-import components.leftSide
+import commons.ConfigFileHandler
+import components.mainView
 import components.top
 import services.LogWriterService
 import services.ProxyService
@@ -31,18 +31,22 @@ fun main() = Window(
     resizable = false
 ) {
     val proxyService = ProxyService(logWriterService)
+    val configFileHandler = ConfigFileHandler.readConfigFile()
 
     MaterialTheme {
 
         Row(
-            modifier = Modifier.background(brush = Brush.verticalGradient(
-                colors = Background
-            ))
+            modifier = Modifier.background(
+                brush = Brush.verticalGradient(
+                    colors = Background
+                )
+            )
         ) {
-            leftSide(
+            mainView(
                 modifier = Modifier,
                 proxyService = proxyService,
-                logWriterService = logWriterService
+                logWriterService = logWriterService,
+                configFile = configFileHandler
             )
         }
         Column {

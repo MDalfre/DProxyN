@@ -21,6 +21,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import commons.ConfigFileHandler
 import commons.DarkBlue
 import commons.DarkGreen
 import kotlinx.coroutines.launch
@@ -33,11 +34,14 @@ import kotlin.concurrent.thread
 val defaultPadding = Modifier.padding(8.dp)
 
 @Composable
-fun leftSide(
+fun mainView(
     modifier: Modifier,
     proxyService: ProxyService,
-    logWriterService: LogWriterService
+    logWriterService: LogWriterService,
+    configFile: MutableList<String>
 ) {
+    val (remoteAddressProp, remotePortProp, localPortProp) = configFile
+
     val defaultButtonColor = buttonColors(backgroundColor = Color.DarkGray, contentColor = Color.White)
     val defaultButtonAbortColor = buttonColors(backgroundColor = MaterialTheme.colors.error)
     val injectedTextColor = MaterialTheme.colors.primary.copy(alpha = ContentAlpha.high)
@@ -46,9 +50,9 @@ fun leftSide(
     val defaultLoopValueRange = 1f..300f
     val defaultIntervalValueRange = 10f..3000f
 
-    var remoteAddress by remember { mutableStateOf("127.0.0.1") }
-    var remotePort by remember { mutableStateOf("2020") }
-    var localPort by remember { mutableStateOf("2021") }
+    var remoteAddress by remember { mutableStateOf(remoteAddressProp) }
+    var remotePort by remember { mutableStateOf(remotePortProp) }
+    var localPort by remember { mutableStateOf(localPortProp) }
     var statedState by remember { mutableStateOf(false) }
 
     var packetLogList by mutableStateOf(listOf<Log>())
@@ -159,6 +163,7 @@ fun leftSide(
                 onClick = {
                     statedState = false
                     proxyService.running = false
+                    ConfigFileHandler.createConfigFile(remoteAddress, remotePort, localPort)
                     logWriterService.systemLog("Sending close connection signal ...")
                 }
             ) {

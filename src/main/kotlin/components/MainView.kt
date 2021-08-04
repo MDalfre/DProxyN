@@ -568,7 +568,9 @@ fun mainView(
     /** Updaters **/
 
     if (packetLogList.size != logWriterService.logList.size) {
-        packetLogList = logWriterService.logList.map { it }.reversed()
+        packetLogList = packetLogList + logWriterService.logList.map { it }
+            .reversed()
+            .takeLast(logWriterService.logList.size - packetLogList.size)
     }
 
     if (messageLogList.size != logWriterService.systemLogList.size) {

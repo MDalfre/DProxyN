@@ -13,7 +13,7 @@ class LogWriterService {
 
     fun log(index: Long, type: String, message: String) {
         logList.add(
-            Log(index = index, type = type, message = message)
+            Log(index = 1L, type = type, message = message)
         )
     }
 

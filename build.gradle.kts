@@ -18,6 +18,7 @@ repositories {
 
 dependencies {
     implementation(compose.desktop.currentOs)
+    implementation("junit:junit:4.13.1")
 }
 
 tasks.withType<KotlinCompile>() {

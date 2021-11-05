@@ -75,7 +75,7 @@ class ProxyService(
         logWriterService.systemLog("Disconnected from the server")
     }
 
-    fun sendPacket2Server(packet: String, loop: Int, interval: Long) {
+    fun sendPacket2Server(packet: String, loop: Int, interval: Long, log: Boolean = serverLog) {
         Thread {
             var loopCounter = loop
             runningServerInjection = true
@@ -87,7 +87,7 @@ class ProxyService(
                         connectServer = remoteConnection,
                         packetToSend = packet,
                         indicator = Indicator.iServer,
-                        log = serverLog,
+                        log = log,
                         iPacketNumber = ++communicationService.packetNumber
                     )
                     Thread.sleep(interval)
@@ -102,7 +102,7 @@ class ProxyService(
         }.start()
     }
 
-    fun sendPacket2Client(packet: String, loop: Int, interval: Long) {
+    fun sendPacket2Client(packet: String, loop: Int, interval: Long, log: Boolean = clientLog) {
         Thread {
             var loopCounter = loop
             runningClientInjection = true
@@ -114,7 +114,7 @@ class ProxyService(
                         connectServer = localConnection,
                         packetToSend = packet,
                         indicator = Indicator.iClient,
-                        log = clientLog,
+                        log = log,
                         iPacketNumber = ++communicationService.packetNumber
                     )
                     Thread.sleep(interval)

@@ -567,13 +567,13 @@ fun mainView(
 
     /** Updaters **/
 
-    if (packetLogList.size != logWriterService.logList.size) {
-        packetLogList = logWriterService.logList.map { it }.reversed()
-    }
-
-    if (messageLogList.size != logWriterService.systemLogList.size) {
-        messageLogList = logWriterService.systemLogList.map { it }.takeLast(6)
-    }
+//    if (packetLogList.size != logWriterService.logList.size) {
+//        packetLogList = logWriterService.logList.map { it }.reversed()
+//    }
+//
+//    if (messageLogList.size != logWriterService.systemLogList.size) {
+//        messageLogList = logWriterService.systemLogList.map { it }.takeLast(6)
+//    }
 
     if (proxyService.runningServerInjection != statedInjectionServerState) {
         statedInjectionServerState = proxyService.runningServerInjection

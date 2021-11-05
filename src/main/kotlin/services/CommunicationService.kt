@@ -2,6 +2,9 @@ package services
 
 import commons.ByteToHex
 import model.Indicator
+import model.PacketPattern
+import model.PacketPatternTypeClient
+import model.PacketPatternTypeTest
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
@@ -38,6 +41,9 @@ class CommunicationService(
             when (log) {
                 true -> logWriterService.log(packetNumber, indicator.name, hexString.toString())
             }
+
+            val packetAsList = hexString.toString().split(" ")
+            PacketPatternTypeTest().readProcessor(packetAsList, indicator)
             return hexString.toString()
         }
 
@@ -68,6 +74,9 @@ class CommunicationService(
             }
             val serverOut: OutputStream = connectServer.getOutputStream()
             serverOut.write(byteArray)
+
+            val packetAsList = packetToSend.split(" ")
+            PacketPatternTypeTest().readProcessor(packetAsList, indicator)
         }
 
     }

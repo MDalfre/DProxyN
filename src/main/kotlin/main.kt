@@ -24,13 +24,14 @@ val OVER_LINE_STYLE = TextStyle(
     letterSpacing = 1.5.sp
 )
 val logWriterService = LogWriterService()
+val proxyService = ProxyService(logWriterService)
 
 fun main() = Window(
     title = "DproxyN",
     size = IntSize(DEFAULT_WIDTH, DEFAULT_HEIGHT),
     resizable = false
 ) {
-    val proxyService = ProxyService(logWriterService)
+
     val configFileHandler = ConfigFileHandler.readConfigFile()
 
     MaterialTheme {
